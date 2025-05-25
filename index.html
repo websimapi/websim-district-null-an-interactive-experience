@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DISTRICT NULL - An Interactive Experience</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier Prime', monospace;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            cursor: none;
+        }
+        
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: linear-gradient(45deg, #1a1a1a, #0d0d0d);
+        }
+        
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            image-rendering: pixelated;
+            filter: contrast(1.2) brightness(0.8);
+        }
+        
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        #statusBar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            height: 30px;
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #333;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 12px;
+        }
+        
+        #enoughMeter {
+            flex: 1;
+            height: 10px;
+            background: #222;
+            margin: 0 10px;
+            position: relative;
+            border: 1px solid #555;
+        }
+        
+        #enoughFill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ff6600, #ffff00);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        #messageBox {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            border: 2px solid #666;
+            max-width: 80%;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            font-size: 14px;
+        }
+        
+        #glitchOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(255,0,0,0.03) 2px,
+                rgba(255,0,0,0.03) 4px
+            );
+            opacity: 0;
+            animation: scanlines 0.1s linear infinite;
+        }
+        
+        @keyframes scanlines {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
+        }
+        
+        @keyframes glitch {
+            0% { transform: translateX(0); }
+            10% { transform: translateX(-2px); }
+            20% { transform: translateX(2px); }
+            30% { transform: translateX(-1px); }
+            40% { transform: translateX(1px); }
+            50% { transform: translateX(0); }
+            100% { transform: translateX(0); }
+        }
+        
+        .glitch-active {
+            animation: glitch 0.2s ease-in-out infinite;
+        }
+        
+        #titleScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            transition: opacity 1s ease;
+        }
+        
+        #title {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ff0000;
+            text-shadow: 2px 2px 4px #000;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        #subtitle {
+            font-size: 18px;
+            color: #888;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        #startButton {
+            padding: 15px 30px;
+            background: rgba(255,0,0,0.2);
+            border: 2px solid #ff0000;
+            color: #fff;
+            font-family: inherit;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        #startButton:hover {
+            background: rgba(255,0,0,0.4);
+            transform: scale(1.05);
+        }
+        
+        @media (max-width: 768px) {
+            #title {
+                font-size: 32px;
+            }
+            
+            #subtitle {
+                font-size: 14px;
+                padding: 0 20px;
+            }
+            
+            #statusBar {
+                font-size: 10px;
+                top: 10px;
+                left: 10px;
+                right: 10px;
+            }
+            
+            #messageBox {
+                font-size: 12px;
+                bottom: 30px;
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="canvas"></canvas>
+        
+        <div id="ui">
+            <div id="statusBar">
+                <span>DISTRICT NULL</span>
+                <div id="enoughMeter">
+                    <div id="enoughFill"></div>
+                </div>
+                <span id="statusText">SIGNAL DEGRADING...</span>
+            </div>
+            
+            <div id="messageBox"></div>
+        </div>
+        
+        <div id="glitchOverlay"></div>
+        
+        <div id="titleScreen">
+            <div id="title">DISTRICT NULL</div>
+            <div id="subtitle">An Interactive Experience<br>TAP TO ENTER</div>
+            <button id="startButton">INITIATE</button>
+        </div>
+    </div>
+    
+    <script src="game.js"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
+
